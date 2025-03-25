@@ -7,12 +7,27 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Helper to handle API URLs in both development and production (Netlify Functions)
+function getApiUrl(url: string): string {
+  // Check if we're in production on Netlify
+  if (import.meta.env.PROD) {
+    // If the URL starts with /api, replace it with /.netlify/functions/api
+    if (url.startsWith('/api')) {
+      return url.replace('/api', '/.netlify/functions/api');
+    }
+  }
+  return url;
+}
+
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  // Transform the URL if needed
+  const apiUrl = getApiUrl(url);
+  
+  const res = await fetch(apiUrl, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
