@@ -94,10 +94,10 @@ export default function ProductDetail() {
       return;
     }
 
-    if (user.userType !== "collector") {
+    if (user.userType !== "collector" && user.userType !== "both") {
       toast({
         title: "Collector account required",
-        description: "Only collectors can start chats with sellers",
+        description: "Only collectors or users with both roles can start chats with sellers",
         variant: "destructive"
       });
       return;

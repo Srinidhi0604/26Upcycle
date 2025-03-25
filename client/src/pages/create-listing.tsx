@@ -75,12 +75,12 @@ export default function CreateListing() {
   const { toast } = useToast();
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
 
-  // Redirect if not a seller
-  if (user && user.userType !== "seller") {
+  // Redirect if not a seller or both
+  if (user && user.userType !== "seller" && user.userType !== "both") {
     navigate("/");
     toast({
       title: "Access Denied",
-      description: "Only sellers can create listings",
+      description: "Only sellers or users with both roles can create listings",
       variant: "destructive"
     });
   }

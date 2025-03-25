@@ -24,7 +24,7 @@ const registrationSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  userType: z.enum(["seller", "collector"], {
+  userType: z.enum(["seller", "collector", "both"], {
     required_error: "Please select a user type",
   }),
 });
@@ -70,7 +70,7 @@ export default function AuthPage() {
       fullName: "",
       email: "",
       password: "",
-      userType: searchParams.get("type") as "seller" | "collector" || "collector",
+      userType: searchParams.get("type") as "seller" | "collector" | "both" || "collector",
     },
   });
 
@@ -170,7 +170,7 @@ export default function AuthPage() {
                             <RadioGroup
                               onValueChange={field.onChange}
                               defaultValue={field.value}
-                              className="grid grid-cols-2 gap-4"
+                              className="grid grid-cols-3 gap-4"
                             >
                               <FormItem className="flex flex-col items-center space-y-2 border rounded-md p-4 cursor-pointer hover:border-primary transition-colors">
                                 <FormControl>
@@ -189,6 +189,16 @@ export default function AuthPage() {
                                 </svg>
                                 <FormLabel className="font-medium cursor-pointer">Collector</FormLabel>
                                 <p className="text-xs text-muted-foreground text-center">Browse and buy items</p>
+                              </FormItem>
+                              <FormItem className="flex flex-col items-center space-y-2 border rounded-md p-4 cursor-pointer hover:border-primary transition-colors">
+                                <FormControl>
+                                  <RadioGroupItem value="both" className="sr-only" />
+                                </FormControl>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1.0 0 10-2 0v1H4a2 2 0 110-4h1.17A3 3 0 015 5z" clipRule="evenodd" />
+                                </svg>
+                                <FormLabel className="font-medium cursor-pointer">Both</FormLabel>
+                                <p className="text-xs text-muted-foreground text-center">Sell and buy items</p>
                               </FormItem>
                             </RadioGroup>
                           </FormControl>
