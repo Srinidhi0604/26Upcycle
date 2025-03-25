@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, MessageCircle, Heart, Calendar, PriceTag, Info, User } from "lucide-react";
+import { Loader2, MessageCircle, Heart, Calendar, Tag, DollarSign, Info, User } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -217,7 +217,7 @@ export default function ProductDetail() {
             </div>
             
             <div className="flex items-center mt-1 text-sm text-gray-600">
-              <PriceTag className="h-4 w-4 mr-1" />
+              <Tag className="h-4 w-4 mr-1" />
               <span>Condition: {product.condition}</span>
             </div>
             
