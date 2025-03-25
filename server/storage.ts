@@ -3,6 +3,7 @@ import session from "express-session";
 import createMemoryStore from "memorystore";
 import { db } from "./db";
 import { eq, and, desc, asc } from "drizzle-orm";
+import { or } from "drizzle-orm/expressions";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
 
@@ -123,10 +124,14 @@ export class DatabaseStorage implements IStorage {
   async getChatsByUser(userId: number): Promise<Chat[]> {
     return await db.select()
       .from(chats)
-      .where(and(
-        eq(chats.sellerId, userId),
-        eq(chats.collectorId, userId)
-      ))
+      .where(
+        // User is either seller OR collector in these chats
+        // (not both as the previous code incorrectly filtered for)
+        or(
+          eq(chats.sellerId, userId),
+          eq(chats.collectorId, userId)
+        )
+      )
       .orderBy(desc(chats.createdAt));
   }
 

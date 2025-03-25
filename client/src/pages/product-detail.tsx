@@ -41,16 +41,10 @@ export default function ProductDetail() {
   } = useQuery<UserType>({
     queryKey: [`/api/users/${product?.sellerId}`],
     queryFn: async () => {
-      // Since we don't have a specific endpoint for this, we're mocking it
-      // In a real app, we would fetch the seller info from the backend
-      return {
-        id: product?.sellerId || 0,
-        username: "seller" + product?.sellerId,
-        fullName: "Seller " + product?.sellerId,
-        email: "seller@example.com",
-        userType: "seller",
-        createdAt: new Date().toISOString()
-      } as UserType;
+      const res = await fetch(`/api/users/${product?.sellerId}`);
+      if (!res.ok) throw new Error("Failed to fetch seller information");
+      const data = await res.json();
+      return data;
     },
     enabled: !!product?.sellerId
   });
