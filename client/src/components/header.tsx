@@ -203,7 +203,7 @@ export default function Header() {
                     </>
                   ) : (
                     <>
-                      {user.userType === "seller" && (
+                      {(user.userType === "seller" || user.userType === "both") && (
                         <>
                           <Button 
                             variant="ghost" 
