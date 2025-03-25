@@ -50,8 +50,16 @@ export default function ChatInterface({ chat, messages, isLoading, partner, prod
     // Create WebSocket connection using correct protocol and path
     // We need to use the same host as the API requests since we're using a proxy in development
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    // The /ws path is configured in the WebSocketServer setup in server/routes.ts
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    
+    // Determine the correct WebSocket URL based on environment
+    let wsUrl;
+    if (import.meta.env.PROD) {
+      // In production on Netlify, use their functions for WebSocket communication
+      wsUrl = `${protocol}//${window.location.host}/.netlify/functions/websocket`;
+    } else {
+      // In development, use the /ws path configured in the WebSocketServer setup in server/routes.ts
+      wsUrl = `${protocol}//${window.location.host}/ws`;
+    }
     console.log(`Connecting to WebSocket at: ${wsUrl}`);
     
     let ws: WebSocket | undefined;
