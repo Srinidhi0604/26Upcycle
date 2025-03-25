@@ -34,12 +34,12 @@ export default function SellerDashboard() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("products");
 
-  // Redirect if not a seller
-  if (user && user.userType !== "seller") {
+  // Redirect if not a seller or both
+  if (user && user.userType !== "seller" && user.userType !== "both") {
     navigate("/");
     toast({
       title: "Access Denied",
-      description: "Only sellers can access the dashboard",
+      description: "Only sellers or users with both roles can access the dashboard",
       variant: "destructive"
     });
   }
@@ -55,7 +55,7 @@ export default function SellerDashboard() {
       if (!res.ok) throw new Error("Failed to fetch products");
       return res.json();
     },
-    enabled: !!user && user.userType === "seller"
+    enabled: !!user && (user.userType === "seller" || user.userType === "both")
   });
 
   // Fetch chats
@@ -69,7 +69,7 @@ export default function SellerDashboard() {
       if (!res.ok) throw new Error("Failed to fetch chats");
       return res.json();
     },
-    enabled: !!user && user.userType === "seller"
+    enabled: !!user && (user.userType === "seller" || user.userType === "both")
   });
 
   // Format date
