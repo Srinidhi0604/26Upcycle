@@ -98,7 +98,7 @@ export default function Header() {
             </div>
           ) : (
             <div className="hidden md:flex items-center space-x-4">
-              {user.userType === "seller" && (
+              {(user.userType === "seller" || user.userType === "both") && (
                 <Button 
                   variant="outline"
                   className="flex items-center gap-1"
@@ -127,7 +127,7 @@ export default function Header() {
                     <span>Profile</span>
                   </DropdownMenuItem>
                   
-                  {user.userType === "seller" && (
+                  {(user.userType === "seller" || user.userType === "both") && (
                     <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/seller/dashboard")}>
                       <ShoppingBag className="mr-2 h-4 w-4" />
                       <span>Seller Dashboard</span>
