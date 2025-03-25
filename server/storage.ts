@@ -1,8 +1,13 @@
 import { users, type User, type InsertUser, products, type Product, type InsertProduct, chats, type Chat, type InsertChat, messages, type Message, type InsertMessage } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import { db } from "./db";
+import { eq, and, desc, asc } from "drizzle-orm";
+import connectPg from "connect-pg-simple";
+import { pool } from "./db";
 
 const MemoryStore = createMemoryStore(session);
+const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
   // User operations
@@ -30,15 +35,139 @@ export interface IStorage {
   createMessage(message: InsertMessage): Promise<Message>;
   
   // Session store
-  sessionStore: any; // Using any type to avoid SessionStore type issues
+  sessionStore: session.Store;
 }
 
+export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
+
+  constructor() {
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true
+    });
+  }
+
+  // User operations
+  async getUser(id: number): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    return result.length ? result[0] : undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
+    return result.length ? result[0] : undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    return result.length ? result[0] : undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const result = await db.insert(users).values(insertUser).returning();
+    return result[0];
+  }
+
+  // Product operations
+  async getProduct(id: number): Promise<Product | undefined> {
+    const result = await db.select().from(products).where(eq(products.id, id)).limit(1);
+    return result.length ? result[0] : undefined;
+  }
+
+  async getProducts(): Promise<Product[]> {
+    return await db.select()
+      .from(products)
+      .where(eq(products.sold, false))
+      .orderBy(desc(products.createdAt));
+  }
+
+  async getProductsByCategory(category: string): Promise<Product[]> {
+    return await db.select()
+      .from(products)
+      .where(and(
+        eq(products.category, category),
+        eq(products.sold, false)
+      ))
+      .orderBy(desc(products.createdAt));
+  }
+
+  async getProductsBySeller(sellerId: number): Promise<Product[]> {
+    return await db.select()
+      .from(products)
+      .where(eq(products.sellerId, sellerId))
+      .orderBy(desc(products.createdAt));
+  }
+
+  async createProduct(product: InsertProduct, sellerId: number): Promise<Product> {
+    const result = await db.insert(products)
+      .values({ ...product, sellerId, sold: false })
+      .returning();
+    return result[0];
+  }
+
+  async updateProduct(id: number, updates: Partial<Product>): Promise<Product | undefined> {
+    const result = await db.update(products)
+      .set(updates)
+      .where(eq(products.id, id))
+      .returning();
+    return result.length ? result[0] : undefined;
+  }
+
+  // Chat operations
+  async getChat(id: number): Promise<Chat | undefined> {
+    const result = await db.select().from(chats).where(eq(chats.id, id)).limit(1);
+    return result.length ? result[0] : undefined;
+  }
+
+  async getChatsByUser(userId: number): Promise<Chat[]> {
+    return await db.select()
+      .from(chats)
+      .where(and(
+        eq(chats.sellerId, userId),
+        eq(chats.collectorId, userId)
+      ))
+      .orderBy(desc(chats.createdAt));
+  }
+
+  async getChatByProductAndUsers(productId: number, sellerId: number, collectorId: number): Promise<Chat | undefined> {
+    const result = await db.select()
+      .from(chats)
+      .where(and(
+        eq(chats.productId, productId),
+        eq(chats.sellerId, sellerId),
+        eq(chats.collectorId, collectorId)
+      ))
+      .limit(1);
+    return result.length ? result[0] : undefined;
+  }
+
+  async createChat(chat: InsertChat): Promise<Chat> {
+    const result = await db.insert(chats).values(chat).returning();
+    return result[0];
+  }
+
+  // Message operations
+  async getMessages(chatId: number): Promise<Message[]> {
+    return await db.select()
+      .from(messages)
+      .where(eq(messages.chatId, chatId))
+      .orderBy(asc(messages.createdAt));
+  }
+
+  async createMessage(message: InsertMessage): Promise<Message> {
+    const result = await db.insert(messages).values(message).returning();
+    return result[0];
+  }
+}
+
+// For in-memory storage (keeping this as a fallback if needed)
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private products: Map<number, Product>;
   private chats: Map<number, Chat>;
   private messages: Map<number, Message>;
-  sessionStore: any; // Using any type to avoid SessionStore type issues
+  sessionStore: session.Store;
   private userId: number;
   private productId: number;
   private chatId: number;
@@ -184,4 +313,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Now using DatabaseStorage instead of MemStorage
+export const storage = new DatabaseStorage();
