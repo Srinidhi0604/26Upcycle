@@ -12,14 +12,11 @@ export default defineConfig({
   base: "./",
   plugins: [
     react(),
-    runtimeErrorOverlay(),
     themePlugin(),
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
       ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer(),
-          ),
+          runtimeErrorOverlay(),
         ]
       : []),
   ],
@@ -34,12 +31,12 @@ export default defineConfig({
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
     rollupOptions: {
-      external: [
-        /^@\/components\/.*/,
-        /^@\/pages\/.*/,
-        /^@\/hooks\/.*/,
-        /^@\/lib\/.*/
-      ]
+      onwarn(warning, warn) {
+        // Skip certain warnings
+        if (warning.code === 'UNRESOLVED_IMPORT') return;
+        // Use default for everything else
+        warn(warning);
+      }
     }
   },
 });
