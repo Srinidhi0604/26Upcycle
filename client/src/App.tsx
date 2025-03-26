@@ -3,18 +3,18 @@ import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "./components/ui/toaster";
-import HomePage from "@/pages/home-page";
-import NotFound from "@/pages/not-found";
-import AuthPage from "@/pages/auth-page";
-import ProductListing from "@/pages/product-listing";
-import ProductDetail from "@/pages/product-detail";
-import SellerDashboard from "@/pages/seller-dashboard";
-import CreateListing from "@/pages/create-listing";
-import Chat from "@/pages/chat";
+import HomePage from "./pages/home-page";
+import NotFound from "./pages/not-found";
+import AuthPage from "./pages/auth-page";
+import ProductListing from "./pages/product-listing";
+import ProductDetail from "./pages/product-detail";
+import SellerDashboard from "./pages/seller-dashboard";
+import CreateListing from "./pages/create-listing";
+import Chat from "./pages/chat";
 import { ProtectedRoute } from "./lib/protected-route";
-import { AuthProvider } from "@/hooks/use-auth";
-import Header from "@/components/header";
-import Footer from "@/components/footer";
+import { AuthProvider } from "./hooks/use-auth";
+import Header from "./components/header";
+import Footer from "./components/footer";
 
 function Router() {
   return (
