@@ -1,11 +1,17 @@
-import { users, type User, type InsertUser, products, type Product, type InsertProduct, chats, type Chat, type InsertChat, messages, type Message, type InsertMessage } from "@shared/schema";
+import { supabase } from './db';
 import session from "express-session";
 import createMemoryStore from "memorystore";
-import { db } from "./db";
-import { eq, and, desc, asc } from "drizzle-orm";
-import { or } from "drizzle-orm/expressions";
 import connectPg from "connect-pg-simple";
-import { pool } from "./db";
+import type { Database } from '../types/supabase';
+
+type User = Database['public']['Tables']['users']['Row'];
+type InsertUser = Database['public']['Tables']['users']['Insert'];
+type Product = Database['public']['Tables']['products']['Row'];
+type InsertProduct = Database['public']['Tables']['products']['Insert'];
+type Chat = Database['public']['Tables']['chats']['Row'];
+type InsertChat = Database['public']['Tables']['chats']['Insert'];
+type Message = Database['public']['Tables']['messages']['Row'];
+type InsertMessage = Database['public']['Tables']['messages']['Insert'];
 
 const MemoryStore = createMemoryStore(session);
 const PostgresSessionStore = connectPg(session);
@@ -43,126 +49,199 @@ export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.sessionStore = new PostgresSessionStore({
-      pool,
-      createTableIfMissing: true
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000 // 24 hours
     });
   }
 
   // User operations
   async getUser(id: number): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
-    return result.length ? result[0] : undefined;
+    const { data, error } = await supabase
+      .from('users')
+      .select()
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
-    return result.length ? result[0] : undefined;
+    const { data, error } = await supabase
+      .from('users')
+      .select()
+      .eq('username', username)
+      .single();
+    
+    if (error) throw error;
+    return data || undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
-    return result.length ? result[0] : undefined;
+    const { data, error } = await supabase
+      .from('users')
+      .select()
+      .eq('email', email)
+      .single();
+    
+    if (error) throw error;
+    return data || undefined;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const result = await db.insert(users).values(insertUser).returning();
-    return result[0];
+  async createUser(user: InsertUser): Promise<User> {
+    const { data, error } = await supabase
+      .from('users')
+      .insert(user)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    if (!data) throw new Error('Failed to create user');
+    return data;
   }
 
   // Product operations
   async getProduct(id: number): Promise<Product | undefined> {
-    const result = await db.select().from(products).where(eq(products.id, id)).limit(1);
-    return result.length ? result[0] : undefined;
+    const { data, error } = await supabase
+      .from('products')
+      .select()
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data || undefined;
   }
 
   async getProducts(): Promise<Product[]> {
-    return await db.select()
-      .from(products)
-      .where(eq(products.sold, false))
-      .orderBy(desc(products.createdAt));
+    const { data, error } = await supabase
+      .from('products')
+      .select()
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
   }
 
   async getProductsByCategory(category: string): Promise<Product[]> {
-    return await db.select()
-      .from(products)
-      .where(and(
-        eq(products.category, category),
-        eq(products.sold, false)
-      ))
-      .orderBy(desc(products.createdAt));
+    const { data, error } = await supabase
+      .from('products')
+      .select()
+      .eq('category', category)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
   }
 
   async getProductsBySeller(sellerId: number): Promise<Product[]> {
-    return await db.select()
-      .from(products)
-      .where(eq(products.sellerId, sellerId))
-      .orderBy(desc(products.createdAt));
+    const { data, error } = await supabase
+      .from('products')
+      .select()
+      .eq('seller_id', sellerId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
   }
 
   async createProduct(product: InsertProduct, sellerId: number): Promise<Product> {
-    const result = await db.insert(products)
-      .values({ ...product, sellerId, sold: false })
-      .returning();
-    return result[0];
+    const { data, error } = await supabase
+      .from('products')
+      .insert({ ...product, seller_id: sellerId })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    if (!data) throw new Error('Failed to create product');
+    return data;
   }
 
   async updateProduct(id: number, updates: Partial<Product>): Promise<Product | undefined> {
-    const result = await db.update(products)
-      .set(updates)
-      .where(eq(products.id, id))
-      .returning();
-    return result.length ? result[0] : undefined;
+    const { data, error } = await supabase
+      .from('products')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data || undefined;
   }
 
   // Chat operations
   async getChat(id: number): Promise<Chat | undefined> {
-    const result = await db.select().from(chats).where(eq(chats.id, id)).limit(1);
-    return result.length ? result[0] : undefined;
+    const { data, error } = await supabase
+      .from('chats')
+      .select()
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data || undefined;
   }
 
   async getChatsByUser(userId: number): Promise<Chat[]> {
-    return await db.select()
-      .from(chats)
-      .where(
-        // User is either seller OR collector in these chats
-        // (not both as the previous code incorrectly filtered for)
-        or(
-          eq(chats.sellerId, userId),
-          eq(chats.collectorId, userId)
-        )
-      )
-      .orderBy(desc(chats.createdAt));
+    const { data, error } = await supabase
+      .from('chats')
+      .select()
+      .or(`seller_id.eq.${userId},collector_id.eq.${userId}`)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
   }
 
-  async getChatByProductAndUsers(productId: number, sellerId: number, collectorId: number): Promise<Chat | undefined> {
-    const result = await db.select()
-      .from(chats)
-      .where(and(
-        eq(chats.productId, productId),
-        eq(chats.sellerId, sellerId),
-        eq(chats.collectorId, collectorId)
-      ))
-      .limit(1);
-    return result.length ? result[0] : undefined;
+  async getChatByProductAndUsers(
+    productId: number,
+    sellerId: number,
+    collectorId: number
+  ): Promise<Chat | undefined> {
+    const { data, error } = await supabase
+      .from('chats')
+      .select()
+      .eq('product_id', productId)
+      .eq('seller_id', sellerId)
+      .eq('collector_id', collectorId)
+      .single();
+    
+    if (error) throw error;
+    return data || undefined;
   }
 
   async createChat(chat: InsertChat): Promise<Chat> {
-    const result = await db.insert(chats).values(chat).returning();
-    return result[0];
+    const { data, error } = await supabase
+      .from('chats')
+      .insert(chat)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    if (!data) throw new Error('Failed to create chat');
+    return data;
   }
 
   // Message operations
   async getMessages(chatId: number): Promise<Message[]> {
-    return await db.select()
-      .from(messages)
-      .where(eq(messages.chatId, chatId))
-      .orderBy(asc(messages.createdAt));
+    const { data, error } = await supabase
+      .from('messages')
+      .select()
+      .eq('chat_id', chatId)
+      .order('created_at', { ascending: true });
+    
+    if (error) throw error;
+    return data || [];
   }
 
   async createMessage(message: InsertMessage): Promise<Message> {
-    const result = await db.insert(messages).values(message).returning();
-    return result[0];
+    const { data, error } = await supabase
+      .from('messages')
+      .insert(message)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    if (!data) throw new Error('Failed to create message');
+    return data;
   }
 }
 
@@ -211,16 +290,15 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userId++;
-    // Explicitly assign values to make TypeScript happy
-    const user: User = { 
+    const user: User = {
       id,
       username: insertUser.username,
       password: insertUser.password,
-      fullName: insertUser.fullName,
+      full_name: insertUser.full_name,
       email: insertUser.email,
-      userType: insertUser.userType,
+      user_type: insertUser.user_type,
       avatar: insertUser.avatar || null,
-      createdAt: new Date()
+      created_at: new Date().toISOString()
     };
     this.users.set(id, user);
     return user;
@@ -234,19 +312,19 @@ export class MemStorage implements IStorage {
   async getProducts(): Promise<Product[]> {
     return Array.from(this.products.values())
       .filter(product => !product.sold)
-      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }
 
   async getProductsByCategory(category: string): Promise<Product[]> {
     return Array.from(this.products.values())
       .filter(product => product.category === category && !product.sold)
-      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }
 
   async getProductsBySeller(sellerId: number): Promise<Product[]> {
     return Array.from(this.products.values())
-      .filter(product => product.sellerId === sellerId)
-      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+      .filter(product => product.seller_id === sellerId)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }
 
   async createProduct(product: InsertProduct, sellerId: number): Promise<Product> {
@@ -254,9 +332,9 @@ export class MemStorage implements IStorage {
     const newProduct: Product = {
       ...product,
       id,
-      sellerId,
+      seller_id: sellerId,
       sold: false,
-      createdAt: new Date()
+      created_at: new Date().toISOString()
     };
     this.products.set(id, newProduct);
     return newProduct;
@@ -278,13 +356,13 @@ export class MemStorage implements IStorage {
 
   async getChatsByUser(userId: number): Promise<Chat[]> {
     return Array.from(this.chats.values())
-      .filter(chat => chat.sellerId === userId || chat.collectorId === userId)
-      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+      .filter(chat => chat.seller_id === userId || chat.collector_id === userId)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }
 
   async getChatByProductAndUsers(productId: number, sellerId: number, collectorId: number): Promise<Chat | undefined> {
     return Array.from(this.chats.values()).find(
-      chat => chat.productId === productId && chat.sellerId === sellerId && chat.collectorId === collectorId
+      chat => chat.product_id === productId && chat.seller_id === sellerId && chat.collector_id === collectorId
     );
   }
 
@@ -293,7 +371,7 @@ export class MemStorage implements IStorage {
     const newChat: Chat = {
       ...chat,
       id,
-      createdAt: new Date()
+      created_at: new Date().toISOString()
     };
     this.chats.set(id, newChat);
     return newChat;
@@ -302,8 +380,8 @@ export class MemStorage implements IStorage {
   // Message operations
   async getMessages(chatId: number): Promise<Message[]> {
     return Array.from(this.messages.values())
-      .filter(message => message.chatId === chatId)
-      .sort((a, b) => (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0));
+      .filter(message => message.chat_id === chatId)
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
   }
 
   async createMessage(message: InsertMessage): Promise<Message> {
@@ -311,7 +389,7 @@ export class MemStorage implements IStorage {
     const newMessage: Message = {
       ...message,
       id,
-      createdAt: new Date()
+      created_at: new Date().toISOString()
     };
     this.messages.set(id, newMessage);
     return newMessage;
