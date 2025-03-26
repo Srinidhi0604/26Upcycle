@@ -1,7 +1,7 @@
 [build]
   base = "."
   command = "npm run build"
-  publish = "client/dist"
+  publish = "dist/public"
 
 [functions]
   directory = "functions"
