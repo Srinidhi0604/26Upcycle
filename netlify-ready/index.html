@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upcycle Marketplace</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .hero-gradient {
+      background: linear-gradient(90deg, #4CAF50 0%, #2196F3 100%);
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    function App() {
+      const [user, setUser] = React.useState(null);
+      const [products, setProducts] = React.useState([
+        {
+          id: 1,
+          title: "Upcycled Denim Tote Bag",
+          price: 35,
+          image: "https://images.unsplash.com/photo-1583842966882-acf3b25feaa4?q=80&w=300",
+          seller: "EcoDesigns",
+          description: "Handcrafted tote bag made from recycled denim jeans."
+        },
+        {
+          id: 2,
+          title: "Repurposed Glass Lamp",
+          price: 75,
+          image: "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?q=80&w=300",
+          seller: "LightWorks",
+          description: "Beautiful lamp made from repurposed wine bottles."
+        },
+        {
+          id: 3,
+          title: "Pallet Wood Coffee Table",
+          price: 120,
+          image: "https://images.unsplash.com/photo-1577124999548-bf30f7a73e5d?q=80&w=300",
+          seller: "GreenFurniture",
+          description: "Rustic coffee table handcrafted from reclaimed pallet wood."
+        },
+        {
+          id: 4,
+          title: "Recycled Tire Planter",
+          price: 45,
+          image: "https://images.unsplash.com/photo-1595841055318-5f53416ca36f?q=80&w=300",
+          seller: "GardenUpcycle",
+          description: "Colorful planter made from recycled tires, perfect for outdoor gardens."
+        }
+      ]);
+      
+      const login = () => {
+        setUser({ name: "Guest User", email: "guest@example.com" });
+      };
+      
+      const logout = () => {
+        setUser(null);
+      };
+      
+      return (
+        <div>
+          <header className="bg-white shadow-md">
+            <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+              <h1 className="text-2xl font-bold text-green-600">Upcycle Marketplace</h1>
+              <nav className="flex items-center space-x-4">
+                <a href="#" className="text-gray-700 hover:text-green-600">Home</a>
+                <a href="#" className="text-gray-700 hover:text-green-600">Products</a>
+                <a href="#" className="text-gray-700 hover:text-green-600">Sellers</a>
+                <a href="#" className="text-gray-700 hover:text-green-600">About</a>
+                {user ? (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-600">Hi, {user.name}</span>
+                    <button 
+                      onClick={logout}
+                      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={login}
+                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                  >
+                    Login
+                  </button>
+                )}
+              </nav>
+            </div>
+          </header>
+          
+          <section className="hero-gradient text-white py-16">
+            <div className="container mx-auto px-4 text-center">
+              <h2 className="text-4xl font-bold mb-4">Sustainable Shopping for a Better Future</h2>
+              <p className="text-xl mb-8">Find unique upcycled products and reduce waste in style.</p>
+              <div className="flex justify-center space-x-4">
+                <button className="bg-white text-green-600 px-6 py-3 rounded-full font-semibold hover:bg-gray-100">
+                  Shop Now
+                </button>
+                <button className="border-2 border-white text-white px-6 py-3 rounded-full font-semibold hover:bg-white hover:text-green-600">
+                  Sell Items
+                </button>
+              </div>
+            </div>
+          </section>
+          
+          <section className="container mx-auto px-4 py-12">
+            <h2 className="text-3xl font-bold mb-8 text-center">Featured Products</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {products.map(product => (
+                <div key={product.id} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                  <img src={product.image} alt={product.title} className="w-full h-48 object-cover" />
+                  <div className="p-4">
+                    <h3 className="text-xl font-semibold mb-2">{product.title}</h3>
+                    <p className="text-gray-600 mb-2">{product.description}</p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-green-600 font-bold">${product.price}</span>
+                      <span className="text-sm text-gray-500">By {product.seller}</span>
+                    </div>
+                    <button className="mt-4 w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+          
+          <section className="bg-gray-200 py-12">
+            <div className="container mx-auto px-4 text-center">
+              <h2 className="text-3xl font-bold mb-6">Why Choose Upcycled Products?</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <div className="text-green-500 text-4xl mb-4">♻️</div>
+                  <h3 className="text-xl font-semibold mb-2">Eco-Friendly</h3>
+                  <p className="text-gray-600">Reduce waste and help protect our planet by giving materials a second life.</p>
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <div className="text-green-500 text-4xl mb-4">🎨</div>
+                  <h3 className="text-xl font-semibold mb-2">Unique Designs</h3>
+                  <p className="text-gray-600">Each upcycled item is one-of-a-kind, adding character to your home and style.</p>
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <div className="text-green-500 text-4xl mb-4">👥</div>
+                  <h3 className="text-xl font-semibold mb-2">Support Creators</h3>
+                  <p className="text-gray-600">Your purchase supports skilled artisans and creative small businesses.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          <footer className="bg-gray-800 text-white py-8">
+            <div className="container mx-auto px-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                  <h4 className="text-lg font-semibold mb-4">About Us</h4>
+                  <p className="text-gray-400">Upcycle Marketplace connects creators of sustainable, upcycled products with conscious consumers.</p>
+                </div>
+                <div>
+                  <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+                  <ul className="space-y-2">
+                    <li><a href="#" className="text-gray-400 hover:text-white">Home</a></li>
+                    <li><a href="#" className="text-gray-400 hover:text-white">Products</a></li>
+                    <li><a href="#" className="text-gray-400 hover:text-white">Sellers</a></li>
+                    <li><a href="#" className="text-gray-400 hover:text-white">About</a></li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-lg font-semibold mb-4">Contact</h4>
+                  <ul className="space-y-2">
+                    <li className="text-gray-400">Email: info@upcycle.com</li>
+                    <li className="text-gray-400">Phone: (123) 456-7890</li>
+                    <li className="text-gray-400">Address: 123 Green St, Earth</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-lg font-semibold mb-4">Newsletter</h4>
+                  <p className="text-gray-400 mb-4">Subscribe for updates on new products and features.</p>
+                  <div className="flex">
+                    <input type="email" placeholder="Your email" className="px-4 py-2 w-full rounded-l" />
+                    <button className="bg-green-500 text-white px-4 py-2 rounded-r hover:bg-green-600">
+                      Subscribe
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
+                <p>&copy; 2025 Upcycle Marketplace. All rights reserved.</p>
+              </div>
+            </div>
+          </footer>
+        </div>
+      );
+    }
+
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<App />);
+  </script>
+</body>
+</html> 
