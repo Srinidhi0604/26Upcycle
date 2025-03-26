@@ -1,6 +1,6 @@
 [build]
   base = "."
-  command = "npm install && cd client && npx vite build --base=./ --force"
+  command = "echo 'Skipping build process'"
   publish = "dist/public"
 
 [functions]
