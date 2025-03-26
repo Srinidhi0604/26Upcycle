@@ -1,6 +1,6 @@
 [build]
   base = "."
-  command = "npm install && cd client && npm run vite build"
+  command = "npm install && cd client && npx vite build --base=./"
   publish = "dist/public"
 
 [functions]
